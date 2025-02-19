@@ -4,9 +4,9 @@ services:
   geocoding:
     build: .
     ports:
-      - "8000:8000"
+      - "${SERVICE_PORT}:${SERVICE_PORT}"
     volumes:
       - .:/code
     environment:
       - PYTHONUNBUFFERED=1
-    command: ["uvicorn", "service:app", "--host", "0.0.0.0", "--port", "8000"]
+    command: /bin/sh -c "uvicorn service:app --host 0.0.0.0 --port ${SERVICE_PORT}"
