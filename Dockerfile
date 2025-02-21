@@ -21,9 +21,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     apt-get update -y \
     && apt-get install -y --no-install-recommends \
         # Build required packages
-        gcc libc-dev gdal-bin libproj-dev \
-        # Helper packages
-        wait-for-it \
+        gdal-bin \
     && uv sync --frozen --no-install-project  --no-dev \
     # Clean-up
     && apt-get remove -y gcc libc-dev libproj-dev \
