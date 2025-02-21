@@ -7,6 +7,10 @@ services:
       - "${SERVICE_PORT}:${SERVICE_PORT}"
     volumes:
       - .:/code
+      - data:${GPKG_DIR_BASE_PATH}
     environment:
-      - PYTHONUNBUFFERED=1
-    command: /bin/sh -c "uvicorn service:app --host 0.0.0.0 --port ${SERVICE_PORT}"
+      GPKG_DIR_BASE_PATH: ${GPKG_DIR_BASE_PATH}
+    command: /bin/sh -c "uvicorn service:app --host 0.0.0.0 --port ${SERVICE_PORT} --workers 1"
+
+volumes:
+  data:

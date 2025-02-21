@@ -1,25 +1,31 @@
-[tool.poetry]
+[project]
 name = "geocoding-service"
 version = "0.1.0"
 description = "Geocoding as a service"
-authors = ["Togglecorp Dev"]
+authors = [{ name = "Togglecorp Dev" }]
+requires-python = "~=3.10"
 license = "MIT"
+dependencies = [
+    "geopandas>=1.0.1,<2",
+    "fiona>=1.10.1,<2",
+    "fastapi>=0.115.8,<0.116",
+    "requests>=2.32.3,<3",
+    "uvicorn>=0.34.0,<0.35",
+    "geojson>=2.5.0",
+    "APScheduler==3.11.0",
+]
 
-[tool.poetry.dependencies]
-python = "^3.10"
-geopandas = "^1.0.1"
-fiona = "^1.10.1"
-fastapi = "^0.115.8"
-requests = "^2.32.3"
-uvicorn = "^0.34.0"
-geojson = ">=2.5.0"
+[dependency-groups]
+dev = [
+    "ipython",
+    "mypy>=0.990,<0.991",
+    "django-stubs>=1.13.0,<2",
+    "flake8>=5.0.4,<6",
+]
 
-
-[tool.poetry.dev-dependencies]
-ipython = "*"
-mypy = "^0.990"
-django-stubs = "^1.13.0"
-flake8 = "^5.0.4"
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [tool.black]
 line-length = 130
@@ -53,9 +59,3 @@ skip = [
 [tool.ruff]
 line-length = 130
 lint.select = ["E", "F", "I"]
-
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
-
-
