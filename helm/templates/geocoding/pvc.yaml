@@ -1,0 +1,18 @@
+{{- if .Values.geocoding.enabled }}
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ template "geocoding-helm.fullname" . }}-shared-volume
+  labels:
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: {{ .Values.sharedVolume.persistence.storageClassName }}
+  resources:
+    requests:
+      storage: {{ .Values.sharedVolume.persistence.size }}
+
+{{- end}}
