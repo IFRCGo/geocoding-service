@@ -1,9 +1,9 @@
 environment: prod
 
 image:
-  name:
-  tag:
-  imagePullPolicy: IfNotPresent
+  name: SET-BY-CICD-IMAGE
+  tag: SET-BY-CICD-TAG
+  PullPolicy: IfNotPresent
 
 geocoding:
   enabled: true

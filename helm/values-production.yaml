@@ -3,7 +3,6 @@ environment: production
 image:
   name:
   tag:
-  imagePullPolicy: IfNotPresent
 
 geocoding:
   enabled: true

@@ -1,9 +1,8 @@
 environment: test
 
 image:
-  name:
-  tag:
-  imagePullPolicy: IfNotPresent
+  name: ghcr.io/ifrcgo/geocoding-service
+  tag: random-tag
 
 geocoding:
   enabled: true
@@ -18,14 +17,11 @@ geocoding:
       memory: 6Gi
 
 ingress:
-  enabled:
-  className:
-  host:
-  tls:
-    enable: false
-    secretName:
+  enabled: true
+  host: test.com
+  className: "nginx"
 
 sharedVolume:
   persistence:
-    storageClassName: ""
-    size: "3G"
+    storageClassName: "longhorn"
+    size: 3Gi
