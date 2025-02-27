@@ -75,3 +75,4 @@ jobs:
         echo '```bash' >> $GITHUB_STEP_SUMMARY
         helm push "$PACKAGE_FILE" $OCI_REPO >> $GITHUB_STEP_SUMMARY
         echo '```' >> $GITHUB_STEP_SUMMARY
+        echo "OCI_REPO: $OCI_REPO"

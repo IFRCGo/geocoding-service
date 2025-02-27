@@ -1,4 +1,4 @@
-{{- if .Values.geocoding.enabled }}
+{{- if .Values.geocoding.persistence.enabled }}
 
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -9,10 +9,12 @@ metadata:
     release: {{ .Release.Name }}
 spec:
   accessModes:
-    - ReadWriteOnce
-  storageClassName: {{ .Values.sharedVolume.persistence.storageClassName }}
+   {{- range .Values.geocoding.persistence.accessModes }}
+    - {{ . | quote }}
+   {{- end }}
+  storageClassName: {{ .Values.geocoding.persistence.storageClassName }}
   resources:
     requests:
-      storage: {{ .Values.sharedVolume.persistence.size }}
+      storage: {{ .Values.geocoding.persistence.size }}
 
 {{- end}}

@@ -15,13 +15,5 @@ geocoding:
     limits:
       cpu: "2"
       memory: 6Gi
-
-ingress:
-  enabled: true
-  host: test.com
-  className: "nginx"
-
-sharedVolume:
   persistence:
-    storageClassName: "longhorn"
-    size: 3Gi
+    enabled: true

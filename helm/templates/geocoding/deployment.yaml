@@ -22,7 +22,7 @@ spec:
         release: {{ .Release.Name }}
         run: {{ .Release.Name }}-geocoding
     spec:
-      containers:
+      containers:  # TODO: Add Container Init
         - name: geocoding
           image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.PullPolicy }}
@@ -31,6 +31,7 @@ spec:
             - name: http
               containerPort: {{ .Values.geocoding.containerPort }}
               protocol: TCP
+          # TODO: livenessProbe and readinessProbe
           resources:
             {{- toYaml .Values.geocoding.resources | nindent 12 }}
           env:
@@ -39,7 +40,7 @@ spec:
             - name: GPKG_DIR_BASE_PATH
               value: "/shared-volume"
           volumeMounts:
-          - mountPath: "shared-volume"
+          - mountPath: "/shared-volume"
             name: shared-volume
       volumes:
         - name: shared-volume

@@ -16,16 +16,9 @@ geocoding:
     limits:
       cpu: "2"
       memory: 6Gi
-
-ingress:
-  enabled: true
-  className:
-  host: 
-  tls:
-    enable: false
-    secretName: ""
-
-sharedVolume:
   persistence:
+    enabled: false
     storageClassName: ""
-    size: "10G"
+    size: 3Gi
+    accessModes:
+      - ReadWriteOnce

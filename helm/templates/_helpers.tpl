@@ -3,7 +3,7 @@
 */}}
 
 {{- define "geocoding-helm.name" -}}
-    {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+    {{- default .Chart.Name .Values.geocoding.nameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/*
@@ -13,10 +13,10 @@
 */}}
 
 {{- define "geocoding-helm.fullname" -}}
-    {{- if .Values.fullnameOverride -}}
-        {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+    {{- if .Values.geocoding.fullnameOverride -}}
+        {{- .Values.geocoding.fullnameOverride | trunc 63 | trimSuffix "-" -}}
     {{- else -}}
-        {{- $name := default .Chart.Name .Values.nameOverride -}}
+        {{- $name := default .Chart.Name .Values.geocoding.nameOverride -}}
         {{- if contains $name .Release.Name -}}
             {{- .Release.Name | trunc 63 | trimSuffix "-" -}}
         {{- else -}}
