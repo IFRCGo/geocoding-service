@@ -1,7 +1,6 @@
 name: Run test
 
 on:
-  workflow_dispatch:
   workflow_call:
     inputs:
       push_docker_image:
@@ -22,7 +21,7 @@ on:
 
 env:
   DJANGO_SECRET_KEY: "ci-test-insecure-django-secret-key"
-  COMPOSE_FILE: docker-compose.yml:gh-docker-compose.yml
+  COMPOSE_FILE: docker-compose.yml
 
 jobs:
   test:
@@ -54,8 +53,6 @@ jobs:
 
           # XXX: Check if there is a slash in the BRANCH_NAME eg: project/add-docker
           if [[ "$BRANCH_NAME" == *"/"* ]]; then
-              # XXX: Change the docker image package to -alpha
-              IMAGE_NAME="$IMAGE_NAME-alpha"
               TAG="$(echo "$BRANCH_NAME" | sed 's|/|-|g').$(echo $GITHUB_SHA | head -c7)"
           else
               TAG="$BRANCH_NAME.$(echo $GITHUB_SHA | head -c7)"
@@ -89,20 +86,14 @@ jobs:
           push: false
           load: true
           tags: ${{ steps.prep.outputs.tagged_image }}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: 🐳 Docker push
         if: ${{ inputs.push_docker_image }}
-        uses: docker/build-push-action@v6
-        with:
-          tags: ${{ steps.prep.outputs.tagged_image }}
-          push: true
-
-      - name: 🐳 Move docker cache (🧙 Hack fix)
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+        run: docker push $IMAGE_TAG
+        env:
+          IMAGE_TAG: ${{ steps.prep.outputs.tagged_image }}
 
   validate_helm:
     name: 🚴 Validate Helm 🚴
