@@ -1,10 +1,8 @@
-environment: test
-
 image:
   name: ghcr.io/ifrcgo/geocoding-service
   tag: random-tag
 
-geocoding:
+server:
   enabled: true
   replicaCount: 1
   containerPort: 8002

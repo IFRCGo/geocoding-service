@@ -3,7 +3,7 @@
 */}}
 
 {{- define "geocoding-helm.name" -}}
-    {{- default .Chart.Name .Values.geocoding.nameOverride | trunc 63 | trimSuffix "-" -}}
+    {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/*
@@ -13,10 +13,10 @@
 */}}
 
 {{- define "geocoding-helm.fullname" -}}
-    {{- if .Values.geocoding.fullnameOverride -}}
-        {{- .Values.geocoding.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+    {{- if .Values.fullnameOverride -}}
+        {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
     {{- else -}}
-        {{- $name := default .Chart.Name .Values.geocoding.nameOverride -}}
+        {{- $name := default .Chart.Name .Values.nameOverride -}}
         {{- if contains $name .Release.Name -}}
             {{- .Release.Name | trunc 63 | trimSuffix "-" -}}
         {{- else -}}
@@ -31,4 +31,26 @@
 
 {{- define "geocoding-helm.chart" -}}
     {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+    Create the name of the service
+*/}}
+{{- define "goecoding-helm.servicename" -}}
+    {{- if .Values.server.serviceName }}
+        {{- .Values.server.serviceName -}}
+    {{- else }}
+        {{- printf "%s-server" (include "geocoding-helm.fullname" .) -}}
+    {{- end -}}
+{{- end -}}
+
+{{/*
+    Create the name of the service
+*/}}
+{{- define "goecoding-helm.fullservicename" -}}
+    {{- if .Values.server.fullServiceName }}
+        {{- printf "http://%s:80" .Values.server.fullServiceName -}}
+    {{- else }}
+        {{- printf "%s-server" (include "geocoding-helm.fullname" .) -}}
+    {{- end -}}
 {{- end -}}

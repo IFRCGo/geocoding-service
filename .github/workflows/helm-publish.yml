@@ -1,6 +1,7 @@
 name: Builds and pushes Docker Images and Helm charts to Github Registry
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -51,8 +52,8 @@ jobs:
       run: |
         # XXX: Check if there is a slash in the BRANCH_NAME eg: project/add-docker
         if [[ "$GITHUB_REF_NAME" == *"/"* ]]; then
-            # XXX: Change the helm chart to <chart-name>-alpha
-            sed -i 's/^name: \(.*\)/name: \1-alpha/' helm/Chart.yaml
+            # XXX: Change the helm chart to <chart-name>
+            sed -i 's/^name: \(.*\)/name: \1/' helm/Chart.yaml
         fi
 
         SHA_SHORT=$(git rev-parse --short HEAD)

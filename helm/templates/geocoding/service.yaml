@@ -1,21 +1,21 @@
-{{- if .Values.geocoding.enabled }}
+{{- if .Values.server.enabled }}
 
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ template "geocoding-helm.fullname" . }}-geocoding
+  name: {{ template "goecoding-helm.servicename" . }}
   labels:
     app: {{ template "geocoding-helm.fullname" . }}
     component: geocoding
-    environment: {{ .Values.environment }}
     release: {{ .Release.Name }}
 spec:
   type: ClusterIP
   selector:
     app: {{ template "geocoding-helm.fullname" . }}
+    component: geocoding
   ports:
     - protocol: TCP
       port: 80
-      targetPort: {{ .Values.geocoding.containerPort }}
+      targetPort: {{ .Values.server.containerPort }}
 
 {{- end }}
