@@ -1,0 +1,53 @@
+{{- if .Values.server.enabled }}
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "geocoding-helm.fullname" . }}-geocoding
+  labels:
+    component: geocoding
+    release: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.server.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "geocoding-helm.fullname" . }}
+      release: {{ .Release.Name }}
+      run: {{ .Release.Name }}-geocoding
+  template:
+    metadata:
+      labels:
+        app: {{ template "geocoding-helm.fullname" . }}
+        release: {{ .Release.Name }}
+        run: {{ .Release.Name }}-geocoding
+    spec:
+      containers:  # TODO: Add Container Init
+        - name: geocoding
+          image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.PullPolicy }}
+          command: ["uvicorn", "service:app", "--host=0.0.0.0", "--port={{ .Values.server.containerPort }}", "--workers=1"] 
+          ports:
+            - name: http
+              containerPort: {{ .Values.server.containerPort }}
+              protocol: TCP
+          # TODO: livenessProbe and readinessProbe
+          resources:
+            {{- toYaml .Values.server.resources | nindent 12 }}
+          env:
+            - name: SERVICE_PORT
+              value: {{ .Values.server.containerPort | quote }}
+            - name: GPKG_DIR_BASE_PATH
+              value: "/shared-volume"
+          {{- if .Values.server.persistence.enabled }}
+          volumeMounts:
+            - mountPath: "/shared-volume"
+              name: shared-volume
+          {{- end }}
+      {{- if .Values.server.persistence.enabled }}
+      volumes:
+        - name: shared-volume
+          persistentVolumeClaim:
+            claimName: {{ template "geocoding-helm.fullname" . }}-shared-volume
+      {{- end }}
+
+{{- end }}

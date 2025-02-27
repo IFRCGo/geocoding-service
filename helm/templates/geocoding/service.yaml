@@ -1,0 +1,21 @@
+{{- if .Values.server.enabled }}
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "goecoding-helm.servicename" . }}
+  labels:
+    app: {{ template "geocoding-helm.fullname" . }}
+    component: geocoding
+    release: {{ .Release.Name }}
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ template "geocoding-helm.fullname" . }}
+    component: geocoding
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: {{ .Values.server.containerPort }}
+
+{{- end }}
