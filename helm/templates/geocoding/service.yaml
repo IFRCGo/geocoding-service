@@ -7,7 +7,6 @@ metadata:
   labels:
     app: {{ template "geocoding-helm.fullname" . }}
     component: geocoding
-    release: {{ .Release.Name }}
 spec:
   type: ClusterIP
   selector:

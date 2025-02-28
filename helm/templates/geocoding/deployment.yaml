@@ -5,6 +5,7 @@ kind: Deployment
 metadata:
   name: {{ template "geocoding-helm.fullname" . }}-geocoding
   labels:
+    app: {{ template "geocoding-helm.fullname" . }}
     component: geocoding
     release: {{ .Release.Name }}
 spec:
@@ -12,8 +13,7 @@ spec:
   selector:
     matchLabels:
       app: {{ template "geocoding-helm.fullname" . }}
-      release: {{ .Release.Name }}
-      run: {{ .Release.Name }}-geocoding
+      component: geocoding
   template:
     metadata:
       labels:
