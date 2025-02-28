@@ -18,8 +18,7 @@ spec:
     metadata:
       labels:
         app: {{ template "geocoding-helm.fullname" . }}
-        release: {{ .Release.Name }}
-        run: {{ .Release.Name }}-geocoding
+        component: geocoding
     spec:
       containers:  # TODO: Add Container Init
         - name: geocoding
