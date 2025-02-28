@@ -1,0 +1,8 @@
+apiVersion: v2
+name: geocoding-helm
+description: A Helm chart for Geocoding service
+type: application
+version: 0.0.1-SET-BY-CICD
+
+sources:
+  - https://github.com/IFRCGo/geocoding-service
