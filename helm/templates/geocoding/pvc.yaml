@@ -5,7 +5,8 @@ kind: PersistentVolumeClaim
 metadata:
   name: {{ template "geocoding-helm.fullname" . }}-shared-volume
   labels:
-    release: {{ .Release.Name }}
+    app: {{ template "geocoding-helm.fullname" . }}
+    component: geocoding
 spec:
   accessModes:
    {{- range .Values.server.persistence.accessModes }}
