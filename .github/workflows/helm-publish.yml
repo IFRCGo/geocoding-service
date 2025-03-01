@@ -56,8 +56,9 @@ jobs:
             sed -i 's/^name: \(.*\)/name: \1/' helm/Chart.yaml
         fi
 
-        SHA_SHORT=$(git rev-parse --short HEAD)
-        sed -i "s/SET-BY-CICD/$SHA_SHORT/g" helm/Chart.yaml
+        # NOTE: `c` is to avoid error by helm if GITHUB_SHA[:7] has only numbers
+        GIT_HASH="c$(echo $GITHUB_SHA | head -c7)"
+        sed -i "s/SET-BY-CICD/$GIT_HASH/g" helm/Chart.yaml
         helm package ./helm -d .helm-charts
 
     - name: Push Helm Chart
