@@ -7,6 +7,7 @@ from fastapi import FastAPI
 
 from download import check_and_download_gaul_file
 from geocoding import GAULGeocoder
+from utils import iso3_to_country_name
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -59,7 +60,7 @@ async def get_by_admin_units(admin_units: str):
         logger.error("Geocoder is not set.")
         return {}
     result = geocoder.get_geometry_from_admin_units(admin_units)
-    return result or {}
+    return result or {"geometry": {}}
 
 
 @app.get("/by_country_name")
@@ -69,4 +70,17 @@ async def get_by_country_name(country_name: str):
         logger.error("Geocoder is not set.")
         return {}
     result = geocoder.get_geometry_by_country_name(country_name)
-    return result or {}
+    return result or {"geometry": {}}
+
+
+@app.get("/by_iso3")
+async def get_by_iso3(iso3: str):
+    """Get the geometry based on iso3"""
+    if not geocoder:
+        logger.error("Geocoder is not set.")
+        return {}
+    country_name = iso3_to_country_name.get(iso3, None)
+    if not country_name:
+        return {}
+    result = geocoder.get_geometry_by_country_name(country_name=country_name)
+    return result or {"geometry": {}}
