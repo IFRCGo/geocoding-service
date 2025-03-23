@@ -99,6 +99,11 @@ async def get_by_iso3(iso3: str):
         return {}
     country_name = iso3_to_country_name.get(iso3, None)
     if not country_name:
-        return {}
+        return {"geometry": {}}
+    if country_to_geo_mapping:
+        result = country_to_geo_mapping.get(country_name.lower(), {})
+        if result:
+            return result
+
     result = geocoder.get_geometry_by_country_name(country_name=country_name)
     return result or {"geometry": {}}
