@@ -1,4 +1,7 @@
+import json
 import logging
+import os
+import zipfile
 from contextlib import asynccontextmanager
 
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -14,6 +17,8 @@ logging.basicConfig(level=logging.INFO)
 logger.setLevel(logging.INFO)
 
 scheduler = BackgroundScheduler()
+
+list_of_countries = list(iso3_to_country_name.values())
 
 
 @asynccontextmanager
@@ -35,6 +40,13 @@ if not file_path:
     raise FileNotFoundError("Geocoding source file couldn't be made available.")
 
 geocoder = GAULGeocoder(gpkg_path=file_path)
+
+country_to_geo_file_path = "./data/country_to_geometry.zip"
+country_to_geo_mapping = {}
+if os.path.exists(country_to_geo_file_path):
+    with zipfile.ZipFile(country_to_geo_file_path, "r") as zip_ref:
+        with zip_ref.open(country_to_geo_file_path.split("/")[-1].replace(".zip", ".json")) as f:
+            country_to_geo_mapping = json.loads(f.read().decode())
 
 
 def scheduled_task():
@@ -66,9 +78,15 @@ async def get_by_admin_units(admin_units: str):
 @app.get("/by_country_name")
 async def get_by_country_name(country_name: str):
     """Get the geometry based on country name"""
+    if country_to_geo_mapping:
+        result = country_to_geo_mapping.get(country_name.lower(), {})
+        if result:
+            return result
+
     if not geocoder:
         logger.error("Geocoder is not set.")
         return {}
+
     result = geocoder.get_geometry_by_country_name(country_name)
     return result or {"geometry": {}}
 

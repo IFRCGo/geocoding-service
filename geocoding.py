@@ -131,6 +131,7 @@ class GAULGeocoder(MontyGeoCoder):
         self._layer = "level2"
         self._simplify_tolerance = simplify_tolerance
         self._cache: Dict[str, Union[Dict[str, Any], int, None]] = {}  # Cache for frequently accessed geometries
+        self.fiona_src = None
         self._initialize_path()
 
     def _initialize_path(self) -> None:
@@ -142,6 +143,10 @@ class GAULGeocoder(MontyGeoCoder):
             self._path = f"zip://{self.gpkg_path}!/{gpkg_name}"
         else:
             self._path = self.gpkg_path
+
+        self.fiona_src = fiona.open(self._path, layer=self._layer)
+        if self.fiona_src:
+            print("Source data is loaded through fiona.")
 
     def _is_zip_file(self, file_path: str) -> bool:
         """Check if a file is a ZIP file"""
@@ -170,12 +175,11 @@ class GAULGeocoder(MontyGeoCoder):
         if not self._path:
             return None
 
-        with fiona.open(self._path, layer=self._layer) as src:
-            for feature in src:
-                if feature["properties"]["ADM2_CODE"] == adm2_code:
-                    adm1_code = int(feature["properties"]["ADM1_CODE"])
-                    self._cache[cache_key] = adm1_code
-                    return adm1_code
+        for feature in self.fiona_src:
+            if feature["properties"]["ADM2_CODE"] == adm2_code:
+                adm1_code = int(feature["properties"]["ADM1_CODE"])
+                self._cache[cache_key] = adm1_code
+                return adm1_code
         return None
 
     def _get_admin1_geometry(self, adm1_code: int) -> Optional[Dict[str, Any]]:
@@ -189,10 +193,10 @@ class GAULGeocoder(MontyGeoCoder):
             return None
 
         features = []
-        with fiona.open(self._path, layer=self._layer) as src:
-            for feature in src:
-                if feature["properties"]["ADM1_CODE"] == adm1_code:
-                    features.append(shape(feature["geometry"]))
+
+        for feature in self.fiona_src:
+            if feature["properties"]["ADM1_CODE"] == adm1_code:
+                features.append(shape(feature["geometry"]))
 
         if not features:
             return None
@@ -215,10 +219,10 @@ class GAULGeocoder(MontyGeoCoder):
             return None
 
         features = []
-        with fiona.open(self._path, layer=self._layer) as src:
-            for feature in src:
-                if feature["properties"]["ADM0_CODE"] == adm0_code:
-                    features.append(shape(feature["geometry"]))
+
+        for feature in self.fiona_src:
+            if feature["properties"]["ADM0_CODE"] == adm0_code:
+                features.append(shape(feature["geometry"]))
 
         if not features:
             return None
@@ -240,13 +244,12 @@ class GAULGeocoder(MontyGeoCoder):
         if not self._path:
             return None
 
-        with fiona.open(self._path, layer=self._layer) as src:
-            # Check first few records until we find a match
-            for feature in src:
-                if feature["properties"].get("ADM0_NAME", "").lower() == name.lower():
-                    adm0_code = int(feature["properties"]["ADM0_CODE"])
-                    self._cache[cache_key] = adm0_code
-                    return adm0_code
+        # Check first few records until we find a match
+        for feature in self.fiona_src:
+            if feature["properties"].get("ADM0_NAME", "").lower() == name.lower():
+                adm0_code = int(feature["properties"]["ADM0_CODE"])
+                self._cache[cache_key] = adm0_code
+                return adm0_code
         return None
 
     def get_geometry_from_admin_units(self, admin_units: str) -> Optional[Dict[str, Any]]:
@@ -333,154 +336,7 @@ class GAULGeocoder(MontyGeoCoder):
     def get_geometry_from_iso3(self, iso3: str) -> Optional[Dict[str, Any]]:
         raise NotImplementedError("Method not implemented")
 
-
-class MockGeocoder(MontyGeoCoder):
-    """
-    Mock implementation of MontyGeoCoder for testing purposes.
-    Returns simplified test geometries without requiring GAUL data.
-    """
-
-    def __init__(self) -> None:
-        """Initialize mock geocoder with test geometries"""
-        # Test geometries for Spain and its admin units
-        self._test_geometries: Dict[str, Dict[str, Any]] = {
-            # Simplified polygon for Spain
-            "ESP": {
-                "geometry": {
-                    "type": "Polygon",
-                    "coordinates": [
-                        [
-                            [-9.0, 36.0],  # Southwest
-                            [-9.0, 44.0],  # Northwest
-                            [3.0, 44.0],  # Northeast
-                            [3.0, 36.0],  # Southeast
-                            [-9.0, 36.0],  # Close polygon
-                        ]
-                    ],
-                },
-                "bbox": [-9.0, 36.0, 3.0, 44.0],
-            },
-            # Test admin unit geometry
-            "admin1": {
-                "geometry": {
-                    "type": "Polygon",
-                    "coordinates": [
-                        [
-                            [-2.0, 40.0],
-                            [-2.0, 42.0],
-                            [0.0, 42.0],
-                            [0.0, 40.0],
-                            [-2.0, 40.0],
-                        ]
-                    ],
-                },
-                "bbox": [-2.0, 40.0, 0.0, 42.0],
-            },
-        }
-
-    def get_geometry_from_admin_units(self, admin_units: str) -> Optional[Dict[str, Any]]:
-        """
-        Get mock geometry for admin units.
-        Returns a simple test polygon for any valid admin unit JSON.
-
-        Args:
-            admin_units: JSON string containing admin unit information
-
-        Returns:
-            Dictionary containing geometry and bbox if found
-        """
-        if not admin_units:
-            return None
-
-        try:
-            admin_list = json.loads(admin_units) if isinstance(admin_units, str) else None
-            if not admin_list:
-                return None
-
-            # Return test geometry for any valid admin unit request
-            if isinstance(admin_list, list) and len(admin_list) > 0:
-                return self._test_geometries["admin1"]
-            return None
-
-        except Exception as e:
-            print(f"Error getting mock geometry from admin units: {str(e)}")
-            return None
-
-    def get_geometry_by_country_name(self, country_name: str) -> Optional[Dict[str, Any]]:
-        """
-        Get mock geometry for a country.
-        Returns a simple test polygon for Spain ("ESP").
-
-        Args:
-            country_name: Country name
-
-        Returns:
-            Dictionary containing geometry and bbox if found
-        """
-        if not country_name:
-            return None
-
-        try:
-            # Return test geometry for Spain
-            if country_name.lower() == "spain":
-                return self._test_geometries["ESP"]
-            return None
-
-        except Exception as e:
-            print(f"Error getting mock country geometry: {str(e)}")
-            return None
-
-    def get_iso3_from_geometry(self, geometry: Dict[str, Any]) -> Optional[str]:
-        """
-        Get ISO3 code for a geometry.
-        Returns the ISO3 code of the first test geometry that intersects with the input geometry.
-
-        Args:
-            geometry: GeoJSON geometry dict
-
-        Returns:
-            Optional[str]: ISO3 code if geometry intersects with any test geometry, None otherwise
-        """
-        if not geometry:
-            return None
-
-        try:
-            # Convert input geometry to shapely
-            input_shape = shape(geometry)
-
-            # Test intersection with all test geometries
-            for iso3, test_geom in self._test_geometries.items():
-                # Skip non-country geometries (like 'admin1')
-                if len(iso3) != 3:
-                    continue
-
-                test_shape = shape(test_geom["geometry"])
-                if input_shape.intersects(test_shape):
-                    return iso3
-
-            return None
-
-        except Exception as e:
-            print(f"Error getting mock ISO3 from geometry: {str(e)}")
-            return None
-
-    def get_geometry_from_iso3(self, iso3: str) -> Optional[Dict[str, Any]]:
-        """
-        Get geometry for an ISO3 code.
-        Returns the test geometry for the given ISO3 code.
-
-        Args:
-            iso3: ISO3 code
-
-        Returns:
-            Optional[Dict[str, Any]]: Geometry and bbox if found, None otherwise
-        """
-        if not iso3:
-            return None
-
-        try:
-            return self._test_geometries.get(iso3)
-        except Exception as e:
-            print(f"Error getting mock geometry from ISO3: {str(e)}")
-
-        return None
+    def __del__(self):
+        """Destructor: Automatically closes file when the object is deleted"""
+        if hasattr(self, "fiona_src") and self.fiona_src:
+            self.fiona_src.close()
