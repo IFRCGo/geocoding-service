@@ -171,4 +171,10 @@ cython_debug/
 .pypirc
 
 # Exclude custom dirs
+<<<<<<< HEAD
 extracted_files/
+||||||| parent of 598c8dc (Use WorldAdministrativeBoundaries)
+extracted_files/
+=======
+geodata/
+>>>>>>> 598c8dc (Use WorldAdministrativeBoundaries)

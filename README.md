@@ -3,32 +3,30 @@
 This server is a FastAPI implementation of the Geocoder as a service. It exposes couple of endpoints which return the Geojson geometry.
 This server loads a file from the following source url:
 
-> Source URL: https://files.emdat.be/data/gaul_gpkg_and_license.zip
+> Source URL: https://public.opendatasoft.com/api/explore/v2.1/catalog/datasets/world-administrative-boundaries/exports/fgb
 
 ## Endpoints
 
 Following are the endpoints exposed:
 
-- GET /by_admin_units?admin_units=location_name
+### GET /iso3_by_geom?lat=lat,lng=lng
 
-This GET request takes in a query parameter `admin_units` and returns the Geojson geometry polygon if available else an empty dict.
+This GET request takes in a query parameter `lat` and `lng` and returns the Json response with name, iso3 and iso2 if available else an empty dict.
 
-- GET /by_country_name?country_name=country_name
+### GET /geom_by_country_name?country_name=country_name
 
 This GET request takes in a query parameter `country_name` and returns the Geojson geometry polygon if available else an empty dict.
 
+### GET /geom_by_iso3?iso3=iso3
 
-## Scheduled job
-
-Apart from the endpoint implementation, this server also runs a scheduled task that pulls the Zip file from the above source in a monthly (first day) basis.
-This ensures we are using a latest file for this service.
+This GET request takes in a query parameter `iso3` and returns the Geojson geometry polygon if available else an empty dict.
 
 ## Setting up the environment
 
-There are two environment variables that needs to be setup before the deployment. Check the file `.env.sample` for reference.
-* **SERVICE_PORT**: The port on which this server runs
-* **GPKG_DIR_BASE_PATH**: The path of the directory where the download file(above) resides.
+Check the file `.env.sample` for reference.
 
+- **SERVICE_PORT**: The port on which this server runs
+- **DATA_PATH**: The path where the geodata is stored
 
 ## Local Deployment
 
