@@ -23,35 +23,21 @@ dev = [
     "flake8>=5.0.4,<6",
 ]
 
-[tool.black]
-line-length = 130
-target-version = ['py39']
-include = '\.pyi?$'
-exclude = '''
-/(
-    \.git
-  | \.tox
-  | \.venv
-  | \.db
-  | _build
-  | buck-out
-  | build
-  | dist
-  | docs
-)/
-'''
-# NOTE: Update in .pre-commit-config.yaml as well
-extend-exclude = "^.*\\b(migrations)\\b.*$ (__pycache__|.+/+.+/+migrations/+.*)"
-
-[tool.isort]
-profile = "black"
-multi_line_output = 3
-# NOTE: Update in .pre-commit-config.yaml as well
-skip = [
-    "**/__pycache__",
-    ".venv/",
-]
-
 [tool.ruff]
 line-length = 130
-lint.select = ["E", "F", "I"]
+extend-exclude = [
+    ".git",
+    ".pytest_cache",
+    ".venv",
+    "venv",
+    "**/migrations/*",
+    "__pycache__",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["C901", "E701", "E203"]
+extend-select = ["I", "E", "F", "W"]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["E402"]
