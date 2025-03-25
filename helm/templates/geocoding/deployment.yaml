@@ -24,7 +24,7 @@ spec:
         - name: geocoding
           image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.PullPolicy }}
-          command: ["uvicorn", "service:app", "--host=0.0.0.0", "--port={{ .Values.server.containerPort }}", "--workers=1"] 
+          command: ["uvicorn", "service:app", "--host=0.0.0.0", "--port={{ .Values.server.containerPort }}", "--workers=1"]
           ports:
             - name: http
               containerPort: {{ .Values.server.containerPort }}
