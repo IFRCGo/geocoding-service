@@ -36,7 +36,7 @@
 {{/*
     Create the name of the service
 */}}
-{{- define "goecoding-helm.servicename" -}}
+{{- define "geocoding-helm.servicename" -}}
     {{- if .Values.server.serviceName }}
         {{- .Values.server.serviceName -}}
     {{- else }}
@@ -47,7 +47,7 @@
 {{/*
     Create the name of the service
 */}}
-{{- define "goecoding-helm.fullservicename" -}}
+{{- define "geocoding-helm.fullservicename" -}}
     {{- if .Values.server.fullServiceName }}
         {{- printf "http://%s:80" .Values.server.fullServiceName -}}
     {{- else }}
