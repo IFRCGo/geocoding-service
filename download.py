@@ -16,7 +16,10 @@ GPKG_DIR_BASE_PATH = os.getenv("GPKG_DIR_BASE_PATH")
 
 
 def check_and_download_gaul_file(
-    filename: str = "gaul_gpkg.zip", chunk_size: int = 128, timeout: int = 30, scheduler_trigger: bool = False
+    filename: str = "gaul_gpkg.zip",
+    chunk_size: int = 128,
+    timeout: int = 30,
+    scheduler_trigger: bool = False,
 ) -> Optional[str]:
     """
     Checks and Downloads the gaul file

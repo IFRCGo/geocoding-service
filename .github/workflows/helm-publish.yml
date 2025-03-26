@@ -1,13 +1,10 @@
-name: Builds and pushes Docker Images and Helm charts to Github Registry
+name: Helm
 
 on:
   workflow_dispatch:
   push:
     branches:
       - main
-      - develop
-      - project/*
-      # XXX: To add tags: Update the -alpha logic
 
 permissions:
   packages: write
@@ -35,31 +32,19 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Install Helm
-      uses: azure/setup-helm@v3
-
-    - name: Tag docker image in Helm Chart values.yaml
+    - name: Tag version in Helm Chart and values.yaml
       env:
         IMAGE_NAME: ${{ needs.ci.outputs.docker_image_name }}
         IMAGE_TAG: ${{ needs.ci.outputs.docker_image_tag }}
       run: |
         # Update values.yaml with latest docker image
-        sed -i "s|SET-BY-CICD-IMAGE|$IMAGE_NAME|" helm/values.yaml
-        sed -i "s/SET-BY-CICD-TAG/$IMAGE_TAG/" helm/values.yaml
+        sed -i "s|SET-BY-CICD-IMAGE|$IMAGE_NAME|" ./helm/values.yaml
+        sed -i "s/SET-BY-CICD-TAG/$IMAGE_TAG/" ./helm/values.yaml
+        # Helm version
+        sed -i "s/SET-BY-CICD/$IMAGE_TAG/g" ./helm/Chart.yaml
 
     - name: Package Helm Chart
-      id: set-variables
-      run: |
-        # XXX: Check if there is a slash in the BRANCH_NAME eg: project/add-docker
-        if [[ "$GITHUB_REF_NAME" == *"/"* ]]; then
-            # XXX: Change the helm chart to <chart-name>
-            sed -i 's/^name: \(.*\)/name: \1/' helm/Chart.yaml
-        fi
-
-        # NOTE: `c` is to avoid error by helm if GITHUB_SHA[:7] has only numbers
-        GIT_HASH="c$(echo $GITHUB_SHA | head -c7)"
-        sed -i "s/SET-BY-CICD/$GIT_HASH/g" helm/Chart.yaml
-        helm package ./helm -d .helm-charts
+      run: helm package ./helm/ -d ./helm/.helm-charts
 
     - name: Push Helm Chart
       env:
@@ -67,14 +52,14 @@ jobs:
         OCI_REPO: oci://ghcr.io/${{ github.repository }}
       run: |
         OCI_REPO=$(echo $OCI_REPO | tr '[:upper:]' '[:lower:]')
-        PACKAGE_FILE=$(ls .helm-charts/*.tgz | head -n 1)
+        PACKAGE_FILE=$(ls ./helm/.helm-charts/*.tgz | head -n 1)
         echo "# Helm Chart" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "Tagged Image: **$IMAGE**" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "Helm push output" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo '```bash' >> $GITHUB_STEP_SUMMARY
-        helm push "$PACKAGE_FILE" $OCI_REPO >> $GITHUB_STEP_SUMMARY
+        echo '```yaml' >> $GITHUB_STEP_SUMMARY
+        helm push "$PACKAGE_FILE" $OCI_REPO 2>> $GITHUB_STEP_SUMMARY
         echo '```' >> $GITHUB_STEP_SUMMARY
-        echo "OCI_REPO: $OCI_REPO"
+        echo "> [!Important]" >> $GITHUB_STEP_SUMMARY
+        echo "> Helm Repo URL: **$OCI_REPO**" >> $GITHUB_STEP_SUMMARY
+        echo "> Helm Chart: **$(helm show chart "$PACKAGE_FILE" | grep '^name:' | awk '{print $2}')**" >> $GITHUB_STEP_SUMMARY
+        echo "> Helm Target Revision: **$(helm show chart "$PACKAGE_FILE" | grep '^version:' | awk '{print $2}')**" >> $GITHUB_STEP_SUMMARY
+        echo "> Docker image: **$IMAGE**" >> $GITHUB_STEP_SUMMARY
