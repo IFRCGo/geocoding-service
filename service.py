@@ -1,72 +1,110 @@
 import logging
-from contextlib import asynccontextmanager
+import time
+from typing import Awaitable, Callable
 
-from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.triggers.cron import CronTrigger
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Query, Request
+from starlette.responses import Response
 
-from download import check_and_download_gaul_file
-from geocoding import GAULGeocoder
-
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
-logger.setLevel(logging.INFO)
-
-scheduler = BackgroundScheduler()
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Life span handler"""
-    # Run every first day of the month (midnight)
-    scheduler.add_job(scheduled_task, CronTrigger(day="1", hour="0", minute="0"))
-    scheduler.start()
-
-    yield
-
-    logger.info("The service is shutting down.")
-
+import geocoding
+from init import lifespan, shared_mem
 
 app = FastAPI(lifespan=lifespan)
+logger = logging.getLogger(__name__)
 
-file_path = check_and_download_gaul_file()
-if not file_path:
-    raise FileNotFoundError("Geocoding source file couldn't be made available.")
+# TODO:
+# - Add decorator to cache requests
+# - Add decorator to handle HTTPExceptions
+# - Support GAUL files (need to size it down)
 
-geocoder = GAULGeocoder(gpkg_path=file_path)
 
+@app.middleware("http")
+async def add_timing_information(
+    request: Request,
+    call_next: Callable[[Request], Awaitable[Response]],
+) -> Response:
+    start_time = time.perf_counter()  # Start timing
+    response = await call_next(request)  # Process request
+    end_time = time.perf_counter()  # End timing
 
-def scheduled_task():
-    """Scheduled Task"""
-    global file_path, geocoder
-    file_path = check_and_download_gaul_file(scheduler_trigger=True)
-    if not file_path:
-        raise FileNotFoundError("Geocoding source file couldn't be made available.")
+    process_time = end_time - start_time
 
-    geocoder = GAULGeocoder(gpkg_path=file_path)
+    # Add timing info to response headers (optional)
+    response.headers["X-Process-Time"] = str(process_time)
+
+    return response
 
 
 @app.get("/")
 async def home():
-    """Test url"""
-    return {"message": "Welcome to geocoding as service"}
+    """Health check"""
+    return {"message": "Hello World!"}
 
 
-@app.get("/by_admin_units")
-async def get_by_admin_units(admin_units: str):
-    """Get the geometry based on admin units"""
-    if not geocoder:
-        logger.error("Geocoder is not set.")
-        return {}
-    result = geocoder.get_geometry_from_admin_units(admin_units)
-    return result or {}
+@app.get("/country/iso3")
+async def get_iso3(lat: float, lng: float) -> geocoding.Country:
+    """Get the iso3 based on coordinate"""
+    try:
+        geocoder = shared_mem["geocoder"]
+        if not geocoder:
+            raise Exception("Geocoder is not initialized")
+        result = geocoder.get_iso3_from_geometry(lat, lng)
+        if not result:
+            raise HTTPException(status_code=404, detail="iso3 not found.")
+        return result
+    except HTTPException:
+        raise
+    except Exception:
+        logger.error("Encountered an unexpected error.", exc_info=True)
+        raise HTTPException(status_code=500, detail="Some error occured.")
 
 
-@app.get("/by_country_name")
-async def get_by_country_name(country_name: str):
-    """Get the geometry based on country name"""
-    if not geocoder:
-        logger.error("Geocoder is not set.")
-        return {}
-    result = geocoder.get_geometry_by_country_name(country_name)
-    return result or {}
+@app.get("/country/geometry")
+async def get_country_geometry(
+    country_name: str | None = None,
+    iso3: str | None = None,
+) -> geocoding.AdminGeometry:
+    """Get the country geometry based on country name or iso3"""
+    try:
+        geocoder = shared_mem["geocoder"]
+        if not geocoder:
+            raise Exception("Geocoder is not initialized")
+        if iso3:
+            result = geocoder.get_geometry_from_iso3(iso3.lower().strip())
+        elif country_name:
+            result = geocoder.get_geometry_from_country_name(country_name.lower().strip())
+        else:
+            raise HTTPException(status_code=400, detail="Either iso3 or country_name is required.")
+
+        if not result:
+            raise HTTPException(status_code=404, detail="Geometry not found.")
+        return result
+    except HTTPException:
+        raise
+    except Exception:
+        logger.error("Encountered an unexpected error.", exc_info=True)
+        raise HTTPException(status_code=500, detail="Some error occured.")
+
+
+@app.get("/admin2/geometries")
+async def get_admin2_geometries(
+    admin1_codes: list[int] = Query(default=[]),
+    admin2_codes: list[int] = Query(default=[]),
+) -> geocoding.AdminGeometry:
+    """Get the admin 2 geometries based on admin 1 codes or admin 2 codes"""
+    try:
+        geocoder = shared_mem["geocoder"]
+        if not geocoder:
+            raise Exception("Geocoder is not initialized")
+        if admin1_codes or admin2_codes:
+            result = geocoder.get_geometry_from_adm_codes(admin1_codes, admin2_codes)
+        else:
+            raise HTTPException(status_code=400, detail="Either admin 1 codes or admin 2 codes is required.")
+
+        if not result:
+            raise HTTPException(status_code=404, detail="Geometry not found.")
+        return result
+    except HTTPException:
+        raise
+    except Exception:
+        logger.error("Encountered an unexpected error.", exc_info=True)
+        raise HTTPException(status_code=500, detail="Some error occured.")

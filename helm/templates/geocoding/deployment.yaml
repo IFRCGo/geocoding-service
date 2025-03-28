@@ -35,8 +35,10 @@ spec:
           env:
             - name: SERVICE_PORT
               value: {{ .Values.server.containerPort | quote }}
-            - name: GPKG_DIR_BASE_PATH
-              value: "/shared-volume"
+            - name: WAB_FILE_PATH
+              value: "/shared-volume/simple.wab.fgb"
+            - name: GAUL_FILE_PATH
+              value: "/shared-volume/simple.gaul.gpkg"
           {{- if .Values.server.persistence.enabled }}
           volumeMounts:
             - mountPath: "/shared-volume"

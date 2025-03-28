@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  data-processor:
+    build: .
+    volumes:
+      - .:/code
+      - ./geodata:/geodata
+    environment:
+      DATA_DIR: /geodata
+      TOLERANCE: 0.001
+    command: /bin/sh /code/prepare.sh

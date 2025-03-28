@@ -6,13 +6,14 @@ authors = [{ name = "Togglecorp Dev" }]
 requires-python = "~=3.10"
 license = "MIT"
 dependencies = [
-    "geopandas>=1.0.1,<2",
     "fiona>=1.10.1,<2",
     "fastapi>=0.115.8,<0.116",
     "requests>=2.32.3,<3",
     "uvicorn>=0.34.0,<0.35",
-    "geojson>=2.5.0",
     "APScheduler==3.11.0",
+    "pydantic-settings>=2.8.1",
+    "pydantic>=2.10.6",
+    "shapely>=2.0.7",
 ]
 
 [dependency-groups]
@@ -41,3 +42,14 @@ extend-select = ["I", "E", "F", "W"]
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["E402"]
+
+
+[tool.pyright]
+exclude = [
+    "**/__pycache__",
+    ".venv/",
+]
+reportMissingImports = true
+reportMissingTypeStubs = false
+venvPath = "."
+venv = ".venv"
