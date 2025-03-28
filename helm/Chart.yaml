@@ -1,5 +1,5 @@
 apiVersion: v2
-name: geocoding-helm
+name: geocoding-lite-helm
 description: A Helm chart for Geocoding service
 type: application
 version: 0.0.1-SET-BY-CICD
