@@ -46,7 +46,7 @@ def _download_geodata(
     if not os.path.exists(file_path):
         logger.info(f"Downloading resources for {name}.")
         _download_file(url=url_path, dest=file_path)
-        logger.info("Download complete for {name}.")
+        logger.info(f"Download complete for {name} and stored at {file_path}.")
 
 
 @asynccontextmanager
@@ -61,8 +61,8 @@ async def lifespan(app: FastAPI):
 
     _download_geodata(
         name="GAUL",
-        url_path=settings.WAB_DOWNLOAD_URL,
-        file_path=settings.WAB_FILE_PATH,
+        url_path=settings.GAUL_DOWNLOAD_URL,
+        file_path=settings.GAUL_FILE_PATH,
     )
 
     logger.info("Initializing geocoder")
