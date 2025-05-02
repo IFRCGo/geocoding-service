@@ -171,4 +171,4 @@ cython_debug/
 .pypirc
 
 # Exclude custom dirs
-extracted_files/
+geodata/
