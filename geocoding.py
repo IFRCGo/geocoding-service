@@ -6,6 +6,8 @@ from shapely.geometry import Point, mapping, shape
 from shapely.geometry.base import BaseGeometry
 from shapely.ops import unary_union
 
+from config import settings
+
 WAB_LAYER = "Layer1"
 
 
@@ -51,7 +53,10 @@ class FastGeocoder:
                 properties = feature["properties"]
                 geometry = feature["geometry"]
                 adm1 = properties["ADM1_CODE"]
-                self._adm1_to_geometry_mapping[adm1] = shape(geometry)
+                geom = shape(geometry)
+                if settings.GEO_SIMPLIFY:
+                    geom = geom.simplify(tolerance=settings.TOLERANCE, preserve_topology=True)
+                self._adm1_to_geometry_mapping[adm1] = geom
 
     def get_iso3_from_geometry(self, lng: float, lat: float) -> Country | None:
         point = Point(lng, lat)
@@ -76,6 +81,8 @@ class FastGeocoder:
             for feature in src:
                 if feature["properties"]["name"].lower().strip() == country_name:
                     geom = shape(feature["geometry"])
+                    if settings.GEO_SIMPLIFY:
+                        geom = geom.simplify(tolerance=settings.TOLERANCE, preserve_topology=True)
                     val = AdminGeometry(
                         geometry=mapping(geom),
                         bbox=geom.bounds,
@@ -125,6 +132,8 @@ class FastGeocoder:
                     continue
                 if iso3_from_feature.lower().strip() == iso3:
                     geom = shape(geometry)
+                    if settings.GEO_SIMPLIFY:
+                        geom = geom.simplify(tolerance=settings.TOLERANCE, preserve_topology=True)
                     val = AdminGeometry(
                         geometry=mapping(geom),
                         bbox=geom.bounds,

@@ -11,6 +11,9 @@ class Settings(BaseSettings):
     GAUL_FILE_PATH: str = "./geodata-prep/geodata/gaul.gpkg"
     GAUL_DOWNLOAD_URL: str = "https://github.com/IFRCGo/geocoding-service/releases/download/v1.0.0/gaul.gpkg"
 
+    TOLERANCE: float = 0.1
+    GEO_SIMPLIFY: bool = True
+
 
 settings = Settings()
 
