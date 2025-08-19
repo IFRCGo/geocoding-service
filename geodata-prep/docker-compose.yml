@@ -9,4 +9,5 @@ services:
     environment:
       DATA_DIR: /geodata
       TOLERANCE: 0.001
+      HIGH_TOLERANCE: 0.2
     command: /bin/sh /code/prepare.sh
