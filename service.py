@@ -41,10 +41,10 @@ async def home():
 
 
 @app.get("/country/iso3")
-async def get_iso3(lat: float, lng: float, simplified: bool = False) -> geocoding.Country:
+async def get_iso3(lat: float, lng: float) -> geocoding.Country:
     """Get the iso3 based on coordinate"""
     try:
-        geocoder = shared_mem["geocoder"] if not simplified else shared_mem["super_simplified_geocoder"]
+        geocoder = shared_mem["geocoder"]
         if not geocoder:
             raise Exception("Geocoder is not initialized")
         result = geocoder.get_iso3_from_geometry(lat, lng)
