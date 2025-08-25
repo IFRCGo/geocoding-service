@@ -13,9 +13,11 @@ from geocoding import FastGeocoder
 
 class SharedMem(typing.TypedDict):
     geocoder: FastGeocoder | None
+    super_simplified_geocoder: FastGeocoder | None
 
 
-shared_mem: SharedMem = {"geocoder": None}
+shared_mem: SharedMem = {"geocoder": None, "super_simplified_geocoder": None}
+
 logger = logging.getLogger(__name__)
 
 
@@ -65,12 +67,27 @@ async def lifespan(app: FastAPI):
         file_path=settings.GAUL_FILE_PATH,
     )
 
+    _download_geodata(
+        name="SUPER_SIMPLIFIED_WAB",
+        url_path=settings.SUPER_SIMPLIFIED_WAB_DOWNLOAD_URL,
+        file_path=settings.SUPER_SIMPLIFIED_WAB_FILE_PATH,
+    )
+
+    _download_geodata(
+        name="SUPER_SIMPLIFIED_GAUL",
+        url_path=settings.SUPER_SIMPLIFIED_GAUL_DOWNLOAD_URL,
+        file_path=settings.SUPER_SIMPLIFIED_GAUL_FILE_PATH,
+    )
+
     logger.info("Initializing geocoder")
     geocoder = FastGeocoder(
         settings.WAB_FILE_PATH,
         settings.GAUL_FILE_PATH,
     )
+    super_simplified_geocoder = FastGeocoder(settings.SUPER_SIMPLIFIED_WAB_FILE_PATH, settings.SUPER_SIMPLIFIED_GAUL_FILE_PATH)
     shared_mem["geocoder"] = geocoder
+    shared_mem["super_simplified_geocoder"] = super_simplified_geocoder
+
     logger.info("Initialization for geocoder complete.")
 
     yield

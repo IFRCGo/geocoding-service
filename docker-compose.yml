@@ -11,4 +11,6 @@ services:
     environment:
       WAB_FILE_PATH: /geodata/simple.wab.fgb
       GAUL_FILE_PATH: /geodata/simple.gaul.gpkg
+      SUPER_SIMPLIFIED_WAB_FILE_PATH: /geodata/super_simple.wab.fgb
+      SUPER_SIMPLIFIED_GAUL_DOWNLOAD_URL: /geodata/super_simple.gaul.gpkg
     command: /bin/sh -c "uvicorn service:app --host 0.0.0.0 --port 8001 --reload --workers 1"

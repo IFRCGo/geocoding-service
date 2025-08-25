@@ -60,12 +60,11 @@ async def get_iso3(lat: float, lng: float) -> geocoding.Country:
 
 @app.get("/country/geometry")
 async def get_country_geometry(
-    country_name: str | None = None,
-    iso3: str | None = None,
+    country_name: str | None = None, iso3: str | None = None, simplified: bool = False
 ) -> geocoding.AdminGeometry:
     """Get the country geometry based on country name or iso3"""
     try:
-        geocoder = shared_mem["geocoder"]
+        geocoder = shared_mem["geocoder"] if not simplified else shared_mem["super_simplified_geocoder"]
         if not geocoder:
             raise Exception("Geocoder is not initialized")
         if iso3:
@@ -87,12 +86,11 @@ async def get_country_geometry(
 
 @app.get("/admin2/geometries")
 async def get_admin2_geometries(
-    admin1_codes: list[int] = Query(default=[]),
-    admin2_codes: list[int] = Query(default=[]),
+    admin1_codes: list[int] = Query(default=[]), admin2_codes: list[int] = Query(default=[]), simplified: bool = False
 ) -> geocoding.AdminGeometry:
     """Get the admin 2 geometries based on admin 1 codes or admin 2 codes"""
     try:
-        geocoder = shared_mem["geocoder"]
+        geocoder = shared_mem["geocoder"] if not simplified else shared_mem["super_simplified_geocoder"]
         if not geocoder:
             raise Exception("Geocoder is not initialized")
         if admin1_codes or admin2_codes:
