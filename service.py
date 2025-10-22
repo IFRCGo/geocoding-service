@@ -7,6 +7,7 @@ from starlette.responses import Response
 
 import geocoding
 from init import lifespan, shared_mem
+from utils import round_geojson_coordinates
 
 app = FastAPI(lifespan=lifespan)
 logger = logging.getLogger(__name__)
@@ -76,7 +77,10 @@ async def get_country_geometry(
 
         if not result:
             raise HTTPException(status_code=404, detail="Geometry not found.")
-        return result
+        simplified_results = round_geojson_coordinates(result)
+        if isinstance(simplified_results, dict):
+            return geocoding.AdminGeometry(**simplified_results)
+        raise ValueError("Error occurred while simplifying the results.")
     except HTTPException:
         raise
     except Exception:
@@ -100,7 +104,10 @@ async def get_admin2_geometries(
 
         if not result:
             raise HTTPException(status_code=404, detail="Geometry not found.")
-        return result
+        simplified_results = round_geojson_coordinates(result)
+        if isinstance(simplified_results, dict):
+            return geocoding.AdminGeometry(**simplified_results)
+        raise ValueError("Error occurred while simplifying the results.")
     except HTTPException:
         raise
     except Exception:
