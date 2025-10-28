@@ -24,18 +24,19 @@ class FastGeocoder:
     _wab_path: str
     _gaul_path: str
 
-    # wab
-    _geom_from_country_name_cache: dict[str, AdminGeometry] = {}
-    _geom_from_iso3_cache: dict[str, AdminGeometry] = {}
-    _geom_from_adm_names_cache: dict[str, AdminGeometry] = {}
-
-    # gaul
-    _adm2_to_adm1_mapping: dict[int, int] = {}
-    _adm1_to_geometry_mapping: dict[int, BaseGeometry] = {}
-
     def __init__(self, wab_path: str, gaul_path: str) -> None:
         self._wab_path = wab_path
         self._gaul_path = gaul_path
+
+        # wab
+        self._geom_from_country_name_cache: dict[str, AdminGeometry] = {}
+        self._geom_from_iso3_cache: dict[str, AdminGeometry] = {}
+        self._geom_from_adm_names_cache: dict[str, AdminGeometry] = {}
+
+        # gaul
+        self._adm2_to_adm1_mapping: dict[int, int] = {}
+        self._adm1_to_geometry_mapping: dict[int, BaseGeometry] = {}
+
         self._init_adm_mapping()
 
     def _init_adm_mapping(self):
@@ -115,7 +116,6 @@ class FastGeocoder:
         from_cache = self._geom_from_iso3_cache.get(iso3)
         if from_cache:
             return from_cache
-
         with fiona.open(self._wab_path, layer=WAB_LAYER) as src:
             for feature in src:
                 properties: dict[str, typing.Any] = feature["properties"]
@@ -129,6 +129,6 @@ class FastGeocoder:
                         geometry=mapping(geom),
                         bbox=geom.bounds,
                     )
-                    self._geom_from_iso3_cache[iso3_from_feature] = val
+                    self._geom_from_iso3_cache[iso3] = val
                     return val
             return None
