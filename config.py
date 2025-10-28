@@ -12,10 +12,14 @@ class Settings(BaseSettings):
     GAUL_DOWNLOAD_URL: str = "https://github.com/IFRCGo/geocoding-service/releases/download/v1.0.0/gaul.gpkg"
     # World Administrative Boundaries
     SUPER_SIMPLIFIED_WAB_FILE_PATH: str = "./geodata-prep/geodata/super_simple.wab.fgb"
-    SUPER_SIMPLIFIED_WAB_DOWNLOAD_URL: str = "https://github.com/IFRCGo/geocoding-service/releases/download/v1.0.0/wab.fgb"
+    SUPER_SIMPLIFIED_WAB_DOWNLOAD_URL: str = (
+        "https://github.com/IFRCGo/geocoding-service/releases/download/v1.0.0/super_simple.wab.fgb"
+    )
     # EMDAT GAUL
     SUPER_SIMPLIFIED_GAUL_FILE_PATH: str = "./geodata-prep/geodata/super_simple.gaul.gpkg"
-    SUPER_SIMPLIFIED_GAUL_DOWNLOAD_URL: str = "https://github.com/IFRCGo/geocoding-service/releases/download/v1.0.0/gaul.gpkg"
+    SUPER_SIMPLIFIED_GAUL_DOWNLOAD_URL: str = (
+        "https://github.com/IFRCGo/geocoding-service/releases/download/v1.0.0/super_simple.gaul.gpkg"
+    )
 
 
 settings = Settings()
