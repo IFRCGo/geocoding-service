@@ -48,7 +48,7 @@ async def get_iso3(lat: float, lng: float) -> geocoding.Country:
         geocoder = shared_mem["geocoder"]
         if not geocoder:
             raise Exception("Geocoder is not initialized")
-        result = geocoder.get_iso3_from_geometry(lat, lng)
+        result = geocoder.get_iso3_from_geometry(lng=lng, lat=lat)
         if not result:
             raise HTTPException(status_code=404, detail="iso3 not found.")
         return result
