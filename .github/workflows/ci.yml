@@ -45,6 +45,25 @@ jobs:
 
       - uses: pre-commit/action@main
 
+  unit_tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@main
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Setup uv python environment
+        run: uv venv
+
+      - name: uv sync
+        run: uv sync --all-extras
+
+      - name: Run tests
+        run: uv run pytest -v
+
   test:
     name: test
     runs-on: ubuntu-latest
