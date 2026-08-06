@@ -34,8 +34,8 @@ class FastGeocoder:
         self._geom_from_adm_names_cache: dict[str, AdminGeometry] = {}
 
         # gaul
-        self._adm2_to_adm1_mapping: dict[int, int] = {}
         self._adm1_to_geometry_mapping: dict[int, BaseGeometry] = {}
+        self._adm2_to_geometry_mapping: dict[int, BaseGeometry] = {}
 
         self._init_adm_mapping()
 
@@ -43,9 +43,9 @@ class FastGeocoder:
         with fiona.open(self._gaul_path, layer="level2") as src:
             for feature in src:
                 properties = feature["properties"]
-                adm1 = properties["ADM1_CODE"]
+                geometry = feature["geometry"]
                 adm2 = properties["ADM2_CODE"]
-                self._adm2_to_adm1_mapping[adm2] = adm1
+                self._adm2_to_geometry_mapping[adm2] = shape(geometry)
 
         with fiona.open(self._gaul_path, layer="level1") as src:
             for feature in src:
@@ -86,10 +86,10 @@ class FastGeocoder:
         return None
 
     def get_geometry_from_adm_codes(self, adm1: list[int], adm2: list[int]):
-        # Get adm1 from adm2
-        adm1_set = set(adm1).union([x for item in adm2 if (x := self._adm2_to_adm1_mapping.get(item)) is not None])
+        adm1_set = set(adm1)
+        adm2_set = set(adm2)
 
-        key = ",".join(map(str, sorted(adm1_set)))
+        key = "adm1:" + ",".join(map(str, sorted(adm1_set))) + "|adm2:" + ",".join(map(str, sorted(adm2_set)))
 
         from_cache = self._geom_from_adm_names_cache.get(key)
         if from_cache:
@@ -98,6 +98,10 @@ class FastGeocoder:
         features: list[BaseGeometry] = []
         for adm1_code in adm1_set:
             geometry = self._adm1_to_geometry_mapping.get(adm1_code)
+            if geometry:
+                features.append(geometry)
+        for adm2_code in adm2_set:
+            geometry = self._adm2_to_geometry_mapping.get(adm2_code)
             if geometry:
                 features.append(geometry)
 
