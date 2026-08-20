@@ -5,11 +5,11 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     # World Administrative Boundaries
-    WAB_FILE_PATH: str = "./geodata-prep/geodata/wab.fgb"
-    WAB_DOWNLOAD_URL: str = "https://github.com/IFRCGo/geocoding-service/releases/download/v1.0.2/wab.fgb"
+    WAB_FILE_PATH: str = "./geodata-prep/geodata/simple.wab.fgb"
+    WAB_DOWNLOAD_URL: str = "https://github.com/IFRCGo/geocoding-service/releases/download/v1.0.2/simple.wab.fgb"
     # EMDAT GAUL
-    GAUL_FILE_PATH: str = "./geodata-prep/geodata/gaul.gpkg"
-    GAUL_DOWNLOAD_URL: str = "https://github.com/IFRCGo/geocoding-service/releases/download/v1.0.2/gaul.gpkg"
+    GAUL_FILE_PATH: str = "./geodata-prep/geodata/simple.gaul.gpkg"
+    GAUL_DOWNLOAD_URL: str = "https://github.com/IFRCGo/geocoding-service/releases/download/v1.0.2/simple.gaul.gpkg"
     # World Administrative Boundaries
     SUPER_SIMPLIFIED_WAB_FILE_PATH: str = "./geodata-prep/geodata/super_simple.wab.fgb"
     SUPER_SIMPLIFIED_WAB_DOWNLOAD_URL: str = (
