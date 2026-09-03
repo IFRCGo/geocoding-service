@@ -69,10 +69,58 @@ class TestGetIso3:
 
         assert response.status_code == 500
 
-    def test_requires_lat_and_lng_query_params(self):
+    def test_returns_400_when_no_params_given(self, mock_geocoder):
         response = client.get("/country/iso3")
 
-        assert response.status_code == 422
+        assert response.status_code == 400
+
+    def test_returns_iso3_by_country_name(self, mock_geocoder):
+        mock_geocoder.get_iso3_from_country_name.return_value = "NPL"
+
+        response = client.get("/country/iso3", params={"country_name": "Nepal"})
+
+        assert response.status_code == 200
+        assert response.json() == {"iso3": "NPL"}
+        mock_geocoder.get_iso3_from_country_name.assert_called_once_with("Nepal")
+
+    def test_returns_404_when_country_name_not_found(self, mock_geocoder):
+        mock_geocoder.get_iso3_from_country_name.return_value = None
+
+        response = client.get("/country/iso3", params={"country_name": "Atlantis"})
+
+        assert response.status_code == 404
+
+    def test_returns_iso3_by_iso2(self, mock_geocoder):
+        mock_geocoder.get_iso3_from_iso2.return_value = "FRA"
+
+        response = client.get("/country/iso3", params={"iso2": "FR"})
+
+        assert response.status_code == 200
+        assert response.json() == {"iso3": "FRA"}
+        mock_geocoder.get_iso3_from_iso2.assert_called_once_with("FR")
+
+    def test_returns_404_when_iso2_not_found(self, mock_geocoder):
+        mock_geocoder.get_iso3_from_iso2.return_value = None
+
+        response = client.get("/country/iso3", params={"iso2": "XX"})
+
+        assert response.status_code == 404
+
+    def test_returns_country_by_iso3(self, mock_geocoder):
+        mock_geocoder.get_country_from_iso3.return_value = Country(name="Nepal", iso3="NPL", iso2="NP")
+
+        response = client.get("/country/iso3", params={"iso3": "NPL"})
+
+        assert response.status_code == 200
+        assert response.json() == {"name": "Nepal", "iso3": "NPL", "iso2": "NP"}
+        mock_geocoder.get_country_from_iso3.assert_called_once_with("NPL")
+
+    def test_returns_404_when_iso3_not_found(self, mock_geocoder):
+        mock_geocoder.get_country_from_iso3.return_value = None
+
+        response = client.get("/country/iso3", params={"iso3": "ZZZ"})
+
+        assert response.status_code == 404
 
 
 class TestGetCountryGeometry:

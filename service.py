@@ -42,12 +42,39 @@ async def home():
 
 
 @app.get("/country/iso3")
-async def get_iso3(lat: float, lng: float) -> geocoding.Country:
-    """Get the iso3 based on coordinate"""
+async def get_iso3(
+    lat: float | None = None,
+    lng: float | None = None,
+    country_name: str | None = None,
+    iso2: str | None = None,
+    iso3: str | None = None,
+) -> geocoding.Country | geocoding.Iso3Response:
+    """Get country info based on coordinate, country name, ISO2, or ISO3 code"""
     try:
         geocoder = shared_mem["geocoder"]
         if not geocoder:
             raise Exception("Geocoder is not initialized")
+
+        if country_name:
+            result = geocoder.get_iso3_from_country_name(country_name)
+            if not result:
+                raise HTTPException(status_code=404, detail="iso3 not found.")
+            return geocoding.Iso3Response(iso3=result)
+
+        if iso2:
+            result = geocoder.get_iso3_from_iso2(iso2)
+            if not result:
+                raise HTTPException(status_code=404, detail="iso3 not found.")
+            return geocoding.Iso3Response(iso3=result)
+
+        if iso3:
+            result = geocoder.get_country_from_iso3(iso3)
+            if not result:
+                raise HTTPException(status_code=404, detail="Country not found.")
+            return result
+
+        if lat is None or lng is None:
+            raise HTTPException(status_code=400, detail="Provide lat/lng, country_name, iso2, or iso3.")
         result = geocoder.get_iso3_from_geometry(lng=lng, lat=lat)
         if not result:
             raise HTTPException(status_code=404, detail="iso3 not found.")

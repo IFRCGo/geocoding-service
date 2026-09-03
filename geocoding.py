@@ -20,6 +20,10 @@ class AdminGeometry(pydantic.BaseModel):
     geometry: dict[str, typing.Any]
 
 
+class Iso3Response(pydantic.BaseModel):
+    iso3: str
+
+
 class FastGeocoder:
     _wab_path: str
     _gaul_path: str
@@ -32,6 +36,9 @@ class FastGeocoder:
         self._geom_from_country_name_cache: dict[str, AdminGeometry] = {}
         self._geom_from_iso3_cache: dict[str, AdminGeometry] = {}
         self._geom_from_adm_names_cache: dict[str, AdminGeometry] = {}
+        self._iso3_from_country_name_cache: dict[str, str] = {}
+        self._iso3_from_iso2_cache: dict[str, str] = {}
+        self._country_from_iso3_cache: dict[str, Country] = {}
 
         # gaul
         self._adm1_to_geometry_mapping: dict[int, BaseGeometry] = {}
@@ -66,6 +73,61 @@ class FastGeocoder:
                         iso3=properties["iso3"],
                         iso2=properties["iso_3166_1_alpha_2_codes"],
                     )
+        return None
+
+    def get_iso3_from_country_name(self, country_name: str) -> str | None:
+        key = country_name.lower().strip()
+        from_cache = self._iso3_from_country_name_cache.get(key)
+        if from_cache:
+            return from_cache
+
+        with fiona.open(self._wab_path, layer=WAB_LAYER) as src:
+            for feature in src:
+                properties: dict[str, typing.Any] = feature["properties"]
+                if properties["name"].lower().strip() == key:
+                    iso3 = properties["iso3"]
+                    self._iso3_from_country_name_cache[key] = iso3
+                    return iso3
+        return None
+
+    def get_iso3_from_iso2(self, iso2: str) -> str | None:
+        key = iso2.lower().strip()
+        from_cache = self._iso3_from_iso2_cache.get(key)
+        if from_cache:
+            return from_cache
+
+        with fiona.open(self._wab_path, layer=WAB_LAYER) as src:
+            for feature in src:
+                properties: dict[str, typing.Any] = feature["properties"]
+                iso2_from_feature = properties["iso_3166_1_alpha_2_codes"]
+                if not iso2_from_feature:
+                    continue
+                if iso2_from_feature.lower().strip() == key:
+                    iso3 = properties["iso3"]
+                    self._iso3_from_iso2_cache[key] = iso3
+                    return iso3
+        return None
+
+    def get_country_from_iso3(self, iso3: str) -> Country | None:
+        key = iso3.lower().strip()
+        from_cache = self._country_from_iso3_cache.get(key)
+        if from_cache:
+            return from_cache
+
+        with fiona.open(self._wab_path, layer=WAB_LAYER) as src:
+            for feature in src:
+                properties: dict[str, typing.Any] = feature["properties"]
+                iso3_from_feature = properties["iso3"]
+                if not iso3_from_feature:
+                    continue
+                if iso3_from_feature.lower().strip() == key:
+                    country = Country(
+                        name=properties["name"],
+                        iso3=iso3_from_feature,
+                        iso2=properties["iso_3166_1_alpha_2_codes"],
+                    )
+                    self._country_from_iso3_cache[key] = country
+                    return country
         return None
 
     def get_geometry_from_country_name(self, country_name: str) -> AdminGeometry | None:
