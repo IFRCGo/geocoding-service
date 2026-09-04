@@ -103,6 +103,7 @@ class TestGetGeometryFromCountryNameRealData:
         result = geocoder.get_geometry_from_country_name("nepal")
         assert isinstance(result, AdminGeometry)
         assert result.bbox == NEPAL_BBOX
+        assert result.iso3 == "NPL"
         assert shape(result.geometry).contains(Point(*KATHMANDU))
 
     def test_returns_none_when_not_found(self, geocoder):
@@ -114,6 +115,7 @@ class TestGetGeometryFromIso3RealData:
         result = geocoder.get_geometry_from_iso3("fra")
         assert result is not None
         assert result.bbox == FRANCE_BBOX
+        assert result.iso3 == "FRA"
         assert shape(result.geometry).contains(Point(*PARIS))
 
     def test_returns_none_for_unknown_iso3(self, geocoder):

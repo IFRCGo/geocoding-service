@@ -18,6 +18,8 @@ class Country(pydantic.BaseModel):
 class AdminGeometry(pydantic.BaseModel):
     bbox: tuple[float, float, float, float]
     geometry: dict[str, typing.Any]
+    # Only available for country level (WAB) lookups, not for admin code lookups.
+    iso3: str | None = None
 
 
 class FastGeocoder:
@@ -75,11 +77,13 @@ class FastGeocoder:
 
         with fiona.open(self._wab_path, layer=WAB_LAYER) as src:
             for feature in src:
-                if feature["properties"]["name"].lower().strip() == country_name:
+                properties: dict[str, typing.Any] = feature["properties"]
+                if properties["name"].lower().strip() == country_name:
                     geom = shape(feature["geometry"])
                     val = AdminGeometry(
                         geometry=mapping(geom),
                         bbox=geom.bounds,
+                        iso3=properties["iso3"] or None,
                     )
                     self._geom_from_country_name_cache[country_name] = val
                     return val
@@ -132,6 +136,7 @@ class FastGeocoder:
                     val = AdminGeometry(
                         geometry=mapping(geom),
                         bbox=geom.bounds,
+                        iso3=iso3_from_feature,
                     )
                     self._geom_from_iso3_cache[iso3] = val
                     return val

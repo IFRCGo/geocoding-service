@@ -85,6 +85,7 @@ class TestGetCountryGeometry:
         mock_geocoder.get_geometry_from_iso3.return_value = AdminGeometry(
             bbox=(0.0, 0.0, 1.0, 1.0),
             geometry={"type": "Point", "coordinates": [0.123456, 0.654321]},
+            iso3="AAA",
         )
 
         response = client.get("/country/geometry", params={"iso3": "AAA"})
@@ -93,17 +94,20 @@ class TestGetCountryGeometry:
         mock_geocoder.get_geometry_from_iso3.assert_called_once_with("aaa")
         # coordinates get rounded to 3 decimal places by round_geojson_coordinates
         assert response.json()["geometry"]["coordinates"] == [0.123, 0.654]
+        assert response.json()["iso3"] == "AAA"
 
     def test_returns_geometry_by_country_name(self, mock_geocoder):
         mock_geocoder.get_geometry_from_country_name.return_value = AdminGeometry(
             bbox=(0.0, 0.0, 1.0, 1.0),
             geometry={"type": "Point", "coordinates": [0.0, 0.0]},
+            iso3="NPL",
         )
 
         response = client.get("/country/geometry", params={"country_name": "  Nepal "})
 
         assert response.status_code == 200
         mock_geocoder.get_geometry_from_country_name.assert_called_once_with("nepal")
+        assert response.json()["iso3"] == "NPL"
 
     def test_returns_404_when_geometry_not_found(self, mock_geocoder):
         mock_geocoder.get_geometry_from_iso3.return_value = None
@@ -144,6 +148,8 @@ class TestGetAdmin2Geometries:
 
         assert response.status_code == 200
         mock_geocoder.get_geometry_from_adm_codes.assert_called_once_with([1, 2], [3])
+        # admin code lookups are not country scoped, so there is no iso3 to report
+        assert response.json()["iso3"] is None
 
     def test_returns_404_when_geometry_not_found(self, mock_geocoder):
         mock_geocoder.get_geometry_from_adm_codes.return_value = None
